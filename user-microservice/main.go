@@ -6,12 +6,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
 )
+type usersMap struct {
+	sync.RWMutex
+	users map[unit]User
+}
+var users usersMap // users by ID - NOT THREADSAFE
+// var mapChan chan func()
 
-var users map[uint]User // users by ID - NOT THREADSAFE
 
 func main() {
-	users = make(map[uint]User)
+
+	users = usersMap{
+		users: make[map[unit]User]
+	}
+	// users = make(map[uint]User)
+  // mapchan = make(chan func())
+	//
+  // go func() {
+	// 	for f := range mapchan {
+	// 		f()
+	// 	}
+	// }()
 
 	http.HandleFunc("/", getHandler)
 	http.HandleFunc("/set", setHandler)
@@ -31,7 +48,17 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, ok := users[uint(idnum)]
+
+  // var user User
+  // var ok bool
+	// getuser := func() {
+	// 	user, ok = users[uint(idnum)]
+	// }
+	//
+	// mapchan <- getuser
+	users.RLock()
+	defer users.Unlock()
+	user, ok := users.users[uint(idnum)]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -58,7 +85,9 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	users[user.ID] = user
+	users.Lock()
+	defer users.Unlock()
+	users.users[user.ID] = user
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -74,7 +103,9 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if _, ok := users[uint(idnum)]; !ok {
+	users.Lock()
+	defer users.Unlock()
+	if _, ok := users.users[uint(idnum)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
