@@ -36,7 +36,9 @@ func main() {
 
 	fmt.Println("tvMode:", *tvMode)
 	fmt.Println("tvActiveChannel:", *tvActiveChannel)
-
+	// this will never actually work because two instances of the program would have their own channels
+	// would need to implement a network service that has the channels and sends/receives channel messags over the network
+	// not practical just a way to work in GO syntax
 	if *tvMode == "station" {
 		if *tvStationApiKey == requiredTvStationKey {
 			fmt.Println("tv-station-key is correct, running in station mode...")
