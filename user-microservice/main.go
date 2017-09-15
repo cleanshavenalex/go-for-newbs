@@ -8,23 +8,24 @@ import (
 	"strconv"
 	"sync"
 )
+
 type usersMap struct {
 	sync.RWMutex
-	users map[unit]User
+	users map[uint]User
 }
+
 var users usersMap // users by ID - NOT THREADSAFE
 // var mapChan chan func()
-
 
 func main() {
 
 	users = usersMap{
-		users: make[map[unit]User]
+		users: make(map[uint]User),
 	}
 	// users = make(map[uint]User)
-  // mapchan = make(chan func())
+	// mapchan = make(chan func())
 	//
-  // go func() {
+	// go func() {
 	// 	for f := range mapchan {
 	// 		f()
 	// 	}
@@ -49,8 +50,8 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  // var user User
-  // var ok bool
+	// var user User
+	// var ok bool
 	// getuser := func() {
 	// 	user, ok = users[uint(idnum)]
 	// }
@@ -109,5 +110,5 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	delete(users, uint(idnum))
+	delete(users.users, uint(idnum))
 }
