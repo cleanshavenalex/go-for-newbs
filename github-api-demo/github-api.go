@@ -18,16 +18,16 @@ func main() {
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
-
-	repos, _, err := client.Repositories.ListByOrg(ctx, "dollarshaveclub", nil)
+	opt := &github.RepositoryListByOrgOptions{Type: "private"}
+	repos, _, err := client.Repositories.ListByOrg(ctx, "dollarshaveclub", opt)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
 	} else {
 		fmt.Println("No Error when client.Repositories.List")
-		fmt.Println(repos)
-		for _, r := range repos {
-			fmt.Println(r)
-		}
+		fmt.Printf("dollarshaveclub has %v repos", len(repos))
+		// for _, r := range repos {
+		// 	fmt.Println(r)
+		// }
 
 	}
 
