@@ -27,8 +27,20 @@ func main() {
 	fmt.Println(http.ListenAndServe("0.0.0.0:8088", nil))
 }
 
+func httpMethodChecker(r *http.Request, expectedMethod string) (ok bool) {
+	ok = false
+	if r.Method == expectedMethod {
+		ok = true
+	}
+	return
+}
+
 func getHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	if !httpMethodChecker(r, "GET") {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,11 +68,18 @@ func getHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func setHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("setHandler Request.Method : %v\n", r.Method)
+
+	if !httpMethodChecker(r, "POST") {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	r.Body.Close()
 	user := User{}
 	err = json.Unmarshal(b, &user)
@@ -71,11 +90,17 @@ func setHandler(w http.ResponseWriter, r *http.Request) {
 	users.Lock()
 	defer users.Unlock()
 	users.users[user.ID] = user
+
 	w.WriteHeader(http.StatusOK)
+
 }
 
 func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+	if !httpMethodChecker(r, "DELETE") {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	id := r.URL.Query().Get("id")
 	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
